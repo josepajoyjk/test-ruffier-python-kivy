@@ -78,15 +78,17 @@ class RuffierTimerWidget(BoxLayout):
     angulo_progreso = NumericProperty(360.0)
     texto_tiempo = StringProperty("15.00")
     contador_pulsaciones = NumericProperty(0)
+    activar_teclado = BooleanProperty(False)  # NUEVA PROPIEDAD PARA CONTROLAR SI MOSTRAMOS EL CONTADOR Y LAS INSTRUCCIONES DE TECLADO
     # 2. AGREGA ESTA LÍNEA AQUÍ (Fuera del __init__):
-    cronometro_activo = BooleanProperty(False)
+    cronometro_activo = BooleanProperty(bool)
 
-    def __init__(self, activar_teclado:BooleanProperty=False, **kwargs):
+    def __init__(self,a_c:bool,**kwargs):
         super().__init__(**kwargs)
+        self.activar_teclado = a_c
         self.evento_reloj = None
         # 3. BORRA O COMENTA la línea vieja de: self.cronometro_activo = False
         self.on_timeout_callback = None 
-        if activar_teclado:
+        if self.activar_teclado:
             Window.bind(on_key_down=self.detectar_latido)
 
     def iniciar_toma(self):
