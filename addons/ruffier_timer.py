@@ -5,6 +5,7 @@ from kivy.properties import NumericProperty, StringProperty, BooleanProperty
 from kivy.clock import Clock
 from kivy.core.window import Window  
 from kivy.lang import Builder
+from kivy.uix.label import Label
 
 # Registramos el diseño exclusivo de este componente
 Builder.load_string('''
@@ -51,7 +52,7 @@ Builder.load_string('''
         size_hint_y: 0.2
         
         Label:
-            text: f"PULSACIONES REGISTRADAS: {root.contador_pulsaciones}"
+            text: f"PULSACIONES REGISTRADAS: {root.contador_pulsaciones}" if root.activar_teclado else ""
             font_size: '28sp'
             bold: True
             color: 0.2, 0.8, 0.4, 1
@@ -78,14 +79,15 @@ class RuffierTimerWidget(BoxLayout):
     texto_tiempo = StringProperty("15.00")
     contador_pulsaciones = NumericProperty(0)
     # 2. AGREGA ESTA LÍNEA AQUÍ (Fuera del __init__):
-    cronometro_activo = BooleanProperty(False) 
+    cronometro_activo = BooleanProperty(False)
 
-    def __init__(self, **kwargs):
+    def __init__(self, activar_teclado:BooleanProperty=False, **kwargs):
         super().__init__(**kwargs)
         self.evento_reloj = None
         # 3. BORRA O COMENTA la línea vieja de: self.cronometro_activo = False
         self.on_timeout_callback = None 
-        Window.bind(on_key_down=self.detectar_latido)
+        if activar_teclado:
+            Window.bind(on_key_down=self.detectar_latido)
 
     def iniciar_toma(self):
         if self.evento_reloj:

@@ -4,8 +4,11 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
+from kivy.core.window import Window
+from kivy.clock import Clock
 from addons.ruffier import *
 from addons.instructions import * 
+from addons.ruffier_timer import RuffierTimerWidget
 
 age = 7
 name = ""
@@ -187,10 +190,19 @@ class Result(Screen):
         # 5. MOSTRAR RESULTADO EN PANTALLA
         self.instr.text = f"{name}\n\n{txt_index}{r_index}\n{txt_workheart}{res}"
 
+
+class PruebasXD(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.ruffieradd = RuffierTimerWidget(activar_teclado=True)
+        
+        self.add_widget(self.ruffieradd)
+
 class HeartCheck(App):
     def build(self):
         self.title = "Test de Ruffier"
         sm = ScreenManager()
+        sm.add_widget(PruebasXD(name='prueba'))
         sm.add_widget(InstScr(name='instr'))
         sm.add_widget(PulseSrc(name='pulse1'))
         sm.add_widget(ChekSits(name='sits'))
