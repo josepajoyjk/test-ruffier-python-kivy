@@ -58,7 +58,7 @@ Builder.load_string('''
             color: 0.2, 0.8, 0.4, 1
             
         Label:
-            text: "[ Presione ESPACIO por cada latido ]" if root.cronometro_activo else "[ Presione Iniciar para comenzar ]"
+            text: ("[ Presione ESPACIO por cada latido ]" if root.cronometro_activo else "[ Presione Iniciar para comenzar ]") if root.activar_teclado else ""            
             font_size: '14sp'
             color: 0.6, 0.6, 0.6, 1
 

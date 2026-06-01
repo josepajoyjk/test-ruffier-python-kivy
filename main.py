@@ -194,7 +194,7 @@ class Result(Screen):
 class PruebasXD(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.ruffieradd = RuffierTimerWidget(a_c=False, t_r=15, t_t="15.00")
+        self.ruffieradd = RuffierTimerWidget(a_c=False)
         
         self.add_widget(self.ruffieradd)
 
