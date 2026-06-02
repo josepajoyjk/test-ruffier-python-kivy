@@ -10,7 +10,7 @@ from kivy.clock import Clock
 from kivy.graphics import Color, Rectangle
 
 from addons.ruffier import *
-from addons.instructions import * # ⚠️ IMPORTACIÓN DEL TEMPORIZADOR PERSONALIZADO
+from addons.instructions import *
 from addons.ruffier_timer import RuffierTimerWidget
 
 # Variables globales de control para los resultados
@@ -43,15 +43,12 @@ class InstScr(Screen):
 
         instr = Label(text=txt_instruction, font_name=font, font_size=font_size, color=COLOR_TEXTO)
         lb1 = Label(text="Ingresar nombre:  ", halign='right', font_name=font, font_size=font_size, color=COLOR_TEXTO)
-        self.in_name = TextInput(multiline=False, font_name=font, font_size=font_size, 
-                                 background_normal='', background_color=COLOR_INPUT_BG, foreground_color=COLOR_TEXTO)
+        self.in_name = TextInput(multiline=False, font_name=font, font_size=font_size, background_normal='', background_color=COLOR_INPUT_BG, foreground_color=COLOR_TEXTO)
         
         lb2 = Label(text="Ingresa la edad:  ", halign='right', font_name=font, font_size=font_size, color=COLOR_TEXTO)
-        self.in_age = TextInput(text='7', multiline=False, font_name=font, font_size=font_size,
-                                 background_normal='', background_color=COLOR_INPUT_BG, foreground_color=COLOR_TEXTO)
+        self.in_age = TextInput(text='7', multiline=False, font_name=font, font_size=font_size, background_normal='', background_color=COLOR_INPUT_BG, foreground_color=COLOR_TEXTO)
 
-        self.btn = Button(text="Siguiente", size_hint=(0.5, 0.15), pos_hint={'center_x': 0.5}, 
-                          font_name=font, font_size=font_size, bold=True, background_normal='', background_color=COLOR_BOTON)
+        self.btn = Button(text="Siguiente", size_hint=(0.5, 0.15), pos_hint={'center_x': 0.5}, font_name=font, font_size=font_size, bold=True, background_normal='', background_color=COLOR_BOTON)
         self.btn.bind(on_press=self.next)
 
         line1 = BoxLayout(size_hint=(0.8, None), height='40sp', pos_hint={'center_x': 0.5}, spacing=10)
@@ -89,9 +86,7 @@ class PulseSrc(Screen):
         # 🟢 IMPORTADO: Teclado activo (a_c=True) para capturar espacios en 15 segundos
         self.ruffieradd = RuffierTimerWidget(a_c=True, tiempo_total=15.0)  
         
-        self.btn_next = Button(text='Siguiente (Ir a Sentadillas)', font_name=font, font_size=font_size, bold=True,
-                               size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5},
-                               background_normal='', background_color=COLOR_BOTON)
+        self.btn_next = Button(text='Siguiente (Ir a Sentadillas)', font_name=font, font_size=font_size, bold=True, size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5}, background_normal='', background_color=COLOR_BOTON)
         self.btn_next.bind(on_press=self.next)
 
         self.outer.add_widget(self.ruffieradd)
