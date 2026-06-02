@@ -98,10 +98,6 @@ class PulseSrc(Screen):
         self.outer.add_widget(self.btn_next)
         self.add_widget(self.outer)
 
-    def on_enter(self):
-        # Cada vez que entramos a la pantalla, se reinicia el teclado y empieza a correr
-        Clock.schedule_once(lambda dt: self.ruffieradd.iniciar_toma(), 0.1)
-
     def next(self, instance):
         global p1
         # Guardamos de forma automática el contador de espacios del widget
@@ -252,28 +248,11 @@ class Result(Screen):
         self.instr.text = f"{name}\n\n{txt_index}{r_index}\n\n{txt_workheart}{res}"
 
 
-class PruebasXD(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        aplicar_fondo_oscuro(self)
-        
-        outer = BoxLayout(orientation='vertical', padding=20, spacing=15)
-        self.ruffieradd = RuffierTimerWidget(a_c=False, tiempo_total=5.0)  
-        
-        self.btn_skip = Button(text='Saltar Inicialización', font_name=font, font_size=font_size, bold=True,
-                               size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5}, background_normal='', background_color=COLOR_BOTON)
-        self.btn_skip.bind(on_press=lambda inst: setattr(self.manager, 'current', 'instr'))
-
-        outer.add_widget(self.ruffieradd)
-        outer.add_widget(self.btn_skip)
-        self.add_widget(outer)
-
 
 class HeartCheck(App):
     def build(self):
         self.title = "Test de Ruffier"
         sm = ScreenManager()
-        sm.add_widget(PruebasXD(name='prueba'))
         sm.add_widget(InstScr(name='instr'))
         sm.add_widget(PulseSrc(name='pulse1'))
         sm.add_widget(ChekSits(name='sits'))
