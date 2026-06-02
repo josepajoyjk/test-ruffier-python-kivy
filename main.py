@@ -194,7 +194,7 @@ class Result(Screen):
 class PruebasXD(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.ruffieradd = RuffierTimerWidget(a_c=False)
+        self.ruffieradd = RuffierTimerWidget(a_c=False, tiempo_total=35.0)  # Configuramos para 30 segundos y sin activar teclado
         
         self.add_widget(self.ruffieradd)
 

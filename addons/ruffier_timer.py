@@ -1,6 +1,5 @@
 # ruffier_timer.py
 from kivy.uix.boxlayout import BoxLayout
-# 1. IMPORTA BooleanProperty AQUÍ ABAJO:
 from kivy.properties import NumericProperty, StringProperty, BooleanProperty
 from kivy.clock import Clock
 from kivy.core.window import Window  
@@ -33,18 +32,21 @@ Builder.load_string('''
             Color:
                 rgba: 0.15, 0.17, 0.22, 1
             Line:
-                circle: (self.center_x, self.center_y, min(self.width, self.height) * 0.38)
+                # CAMBIO: Usar el centro local del layout
+                circle: (self.width / 2, self.height / 2, min(self.width, self.height) * 0.38)
                 width: 10
             Color:
                 rgba: (0.1, 0.7, 0.9, 1) if root.tiempo_restante > 0 else (0.9, 0.2, 0.3, 1)
             Line:
-                circle: (self.center_x, self.center_y, min(self.width, self.height) * 0.38, 0, root.angulo_progreso)
+                # CAMBIO: Usar el centro local del layout
+                circle: (self.width / 2, self.height / 2, min(self.width, self.height) * 0.38, 0, root.angulo_progreso)
                 width: 10
 
         Label:
             text: root.texto_tiempo
             font_size: '75sp'
             bold: True
+            # El Label sí usa pos_hint relativo, por lo que el centro 0.5 lo ubica perfecto
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
 
     BoxLayout:
@@ -58,12 +60,13 @@ Builder.load_string('''
             color: 0.2, 0.8, 0.4, 1
             
         Label:
-            text: ("[ Presione ESPACIO por cada latido ]" if root.cronometro_activo else "[ Presione Iniciar para comenzar ]") if root.activar_teclado else ""            
+            text: ("[ Presione ESPACIO por cada latido ]" if root.cronometro_activo else "[ Presione Iniciar para comenzar ]") if root.activar_teclado else ""
             font_size: '14sp'
             color: 0.6, 0.6, 0.6, 1
 
     Button:
-        text: 'Iniciar Toma (15 Segundos)'
+        # CAMBIO: Ahora el botón muestra dinámicamente los segundos configurados
+        text: f'Iniciar Toma ({int(root.tiempo_configurado)} Segundos)'
         size_hint: (0.5, 0.1)
         pos_hint: {'center_x': 0.5}
         background_normal: ''
@@ -74,20 +77,26 @@ Builder.load_string('''
 ''')
 
 class RuffierTimerWidget(BoxLayout):
+    tiempo_configurado = NumericProperty(15.0) # Guardamos el límite que tú decidas pasarle
     tiempo_restante = NumericProperty(15.0)
     angulo_progreso = NumericProperty(360.0)
     texto_tiempo = StringProperty("15.00")
     contador_pulsaciones = NumericProperty(0)
-    activar_teclado = BooleanProperty(False)  # NUEVA PROPIEDAD PARA CONTROLAR SI MOSTRAMOS EL CONTADOR Y LAS INSTRUCCIONES DE TECLADO
-    # 2. AGREGA ESTA LÍNEA AQUÍ (Fuera del __init__):
-    cronometro_activo = BooleanProperty(bool)
+    activar_teclado = BooleanProperty(False) 
+    cronometro_activo = BooleanProperty(False)
 
-    def __init__(self,a_c:bool,**kwargs):
-        super().__init__(**kwargs)
+    # Agregamos 'tiempo_total' con 15.0 como valor por defecto por si no le pasas nada
+    def __init__(self, a_c=False, tiempo_total=15.0, **kwargs):
         self.activar_teclado = a_c
+        self.tiempo_configurado = float(tiempo_total)
+        self.tiempo_restante = float(tiempo_total)
+        self.texto_tiempo = f"{self.tiempo_restante:.2f}"
+        
+        super().__init__(**kwargs)
+        
         self.evento_reloj = None
-        # 3. BORRA O COMENTA la línea vieja de: self.cronometro_activo = False
         self.on_timeout_callback = None 
+        
         if self.activar_teclado:
             Window.bind(on_key_down=self.detectar_latido)
 
@@ -95,9 +104,10 @@ class RuffierTimerWidget(BoxLayout):
         if self.evento_reloj:
             Clock.unschedule(self.evento_reloj)
         
-        self.tiempo_restante = 15.0
+        # Reiniciamos basándonos en el tiempo que configuraste al crear el widget
+        self.tiempo_restante = self.tiempo_configurado
         self.angulo_progreso = 360.0
-        self.texto_tiempo = "15.00"
+        self.texto_tiempo = f"{self.tiempo_restante:.2f}"
         self.contador_pulsaciones = 0
         self.cronometro_activo = True 
         
@@ -113,12 +123,12 @@ class RuffierTimerWidget(BoxLayout):
             self.cronometro_activo = False 
             Clock.unschedule(self.evento_reloj)
             
-            # Si el código principal nos dio una función para avisar, la llamamos pasándole el resultado
             if self.on_timeout_callback:
                 self.on_timeout_callback(self.contador_pulsaciones)
         else:
             self.texto_tiempo = f"{self.tiempo_restante:.2f}"
-            self.angulo_progreso = (self.tiempo_restante / 15.0) * 360.0
+            # CAMBIO: El cálculo del ángulo ahora es relativo al tiempo configurado
+            self.angulo_progreso = (self.tiempo_restante / self.tiempo_configurado) * 360.0
 
     def detectar_latido(self, window, key, scancode, codepoint, modifiers):
         if key == 32: # Espacio
