@@ -52,21 +52,9 @@ class InstScr(Screen):
 class PulseSrc(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
-        instr = Label(text=txt_test1, font_name=font, font_size=font_size)
-        line = BoxLayout(size_hint=(0.8, None), height='30sp')
-        lbl_result = Label(text="Ingresar el resultado: ", halign='right', font_name=font, font_size=font_size)
-        self.in_result = TextInput(text='0', multiline=False, font_name=font, font_size=font_size)
-        line.add_widget(lbl_result)
-        line.add_widget(self.in_result)
-
-        self.btn = Button(text="Siguiente", size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5}, font_name=font, font_size=font_size)
-        self.btn.bind(on_press=self.next)
-
-        outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
-        outer.add_widget(instr)
-        outer.add_widget(line)
-        outer.add_widget(self.btn)
-        self.add_widget(outer)
+        self.ruffieradd = RuffierTimerWidget(a_c=True, tiempo_total=15.0)  # Configuramos para 30 segundos y sin activar teclado
+        
+        self.add_widget(self.ruffieradd)
 
     def next(self, instance):
         global p1

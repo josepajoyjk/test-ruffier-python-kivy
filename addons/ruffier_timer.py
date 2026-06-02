@@ -7,6 +7,7 @@ from kivy.lang import Builder
 from kivy.uix.label import Label
 
 # Registramos el diseño exclusivo de este componente
+
 Builder.load_string('''
 <RuffierTimerWidget>:
     orientation: 'vertical'
@@ -21,6 +22,7 @@ Builder.load_string('''
 
     Label:
         text: "TEST DE RUFFIER - CONTROL DE PULSO"
+        font_name: 'addons/sans-beach/Sans Beach.ttf'
         font_size: '22sp'
         bold: True
         size_hint_y: 0.1
@@ -44,6 +46,7 @@ Builder.load_string('''
 
         Label:
             text: root.texto_tiempo
+            font_name: 'addons/sans-beach/Sans Beach.ttf'
             font_size: '75sp'
             bold: True
             # El Label sí usa pos_hint relativo, por lo que el centro 0.5 lo ubica perfecto
@@ -54,12 +57,14 @@ Builder.load_string('''
         size_hint_y: 0.2
         
         Label:
+            font_name: 'addons/sans-beach/Sans Beach.ttf'
             text: f"PULSACIONES REGISTRADAS: {root.contador_pulsaciones}" if root.activar_teclado else ""
             font_size: '28sp'
             bold: True
             color: 0.2, 0.8, 0.4, 1
             
         Label:
+            font_name: 'addons/sans-beach/Sans Beach.ttf'
             text: ("[ Presione ESPACIO por cada latido ]" if root.cronometro_activo else "[ Presione Iniciar para comenzar ]") if root.activar_teclado else ""
             font_size: '14sp'
             color: 0.6, 0.6, 0.6, 1
@@ -67,6 +72,7 @@ Builder.load_string('''
     Button:
         # CAMBIO: Ahora el botón muestra dinámicamente los segundos configurados
         text: f'Iniciar Toma ({int(root.tiempo_configurado)} Segundos)'
+        font_name: 'addons/sans-beach/Sans Beach.ttf'
         size_hint: (0.5, 0.1)
         pos_hint: {'center_x': 0.5}
         background_normal: ''
