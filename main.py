@@ -1,3 +1,4 @@
+# main.py
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.boxlayout import BoxLayout
@@ -6,34 +7,61 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.core.window import Window
 from kivy.clock import Clock
+from kivy.graphics import Color, Rectangle
+
 from addons.ruffier import *
-from addons.instructions import * 
+from addons.instructions import * # ⚠️ IMPORTACIÓN DEL TEMPORIZADOR PERSONALIZADO
 from addons.ruffier_timer import RuffierTimerWidget
 
+# Variables globales de control para los resultados
 age = 7
 name = ""
 p1, p2, p3 = 0, 0, 0
-font = 'addons/sans-beach/Sans Beach.ttf'  # Ruta a la fuente personalizada
-font_size = '20sp'  # Tamaño de fuente para los textos
+
+# Paleta de colores idéntica a tu ruffier_timer.py
+COLOR_FONDO = (0.08, 0.09, 0.12, 1)      
+COLOR_INPUT_BG = (0.15, 0.17, 0.22, 1)   
+COLOR_BOTON = (0.0, 0.5, 0.8, 1)         
+COLOR_TEXTO = (0.9, 0.9, 0.9, 1)         
+
+font = 'addons/sans-beach/Sans Beach.ttf'  
+font_size = '20sp'  
+
+def aplicar_fondo_oscuro(screen_instance):
+    """Pinta el fondo de la escena con el mismo color oscuro del temporizador"""
+    with screen_instance.canvas.before:
+        Color(rgba=COLOR_FONDO)
+        screen_instance.rect_fondo = Rectangle(pos=screen_instance.pos, size=screen_instance.size)
+    screen_instance.bind(pos=lambda src, pos: setattr(src.rect_fondo, 'pos', pos))
+    screen_instance.bind(size=lambda src, size: setattr(src.rect_fondo, 'size', size))
+
+
 class InstScr(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
-        instr = Label(text=txt_instruction, font_name=font, font_size=font_size)
-        lb1 = Label(text="Ingresar nombre:", halign='right', font_name=font, font_size=font_size)
-        self.in_name = TextInput(multiline=False, font_name=font, font_size=font_size)
-        lb2 = Label(text="Ingresa la edad:", halign='right', font_name=font, font_size=font_size)
-        self.in_age = TextInput(text='7', multiline=False, font_name=font, font_size=font_size)
+        aplicar_fondo_oscuro(self)
 
-        self.btn = Button(text="Siguiente", size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5}, font_name=font, font_size=font_size)
+        instr = Label(text=txt_instruction, font_name=font, font_size=font_size, color=COLOR_TEXTO)
+        lb1 = Label(text="Ingresar nombre:  ", halign='right', font_name=font, font_size=font_size, color=COLOR_TEXTO)
+        self.in_name = TextInput(multiline=False, font_name=font, font_size=font_size, 
+                                 background_normal='', background_color=COLOR_INPUT_BG, foreground_color=COLOR_TEXTO)
+        
+        lb2 = Label(text="Ingresa la edad:  ", halign='right', font_name=font, font_size=font_size, color=COLOR_TEXTO)
+        self.in_age = TextInput(text='7', multiline=False, font_name=font, font_size=font_size,
+                                 background_normal='', background_color=COLOR_INPUT_BG, foreground_color=COLOR_TEXTO)
+
+        self.btn = Button(text="Siguiente", size_hint=(0.5, 0.15), pos_hint={'center_x': 0.5}, 
+                          font_name=font, font_size=font_size, bold=True, background_normal='', background_color=COLOR_BOTON)
         self.btn.bind(on_press=self.next)
 
-        line1 = BoxLayout(size_hint=(0.8, None), height='30sp')
-        line2 = BoxLayout(size_hint=(0.8, None), height='30sp')
+        line1 = BoxLayout(size_hint=(0.8, None), height='40sp', pos_hint={'center_x': 0.5}, spacing=10)
+        line2 = BoxLayout(size_hint=(0.8, None), height='40sp', pos_hint={'center_x': 0.5}, spacing=10)
         line1.add_widget(lb1)
         line1.add_widget(self.in_name)
         line2.add_widget(lb2)
         line2.add_widget(self.in_age)
-        outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
+        
+        outer = BoxLayout(orientation='vertical', padding=30, spacing=20)
         outer.add_widget(instr)
         outer.add_widget(line1)
         outer.add_widget(line2)
@@ -49,28 +77,49 @@ class InstScr(Screen):
             age = 7 
         self.manager.current = 'pulse1'
 
+
 class PulseSrc(Screen):
+    """PANTALLA PULSO 1: Muestra el cronómetro de 15 segundos y cuenta espacios"""
     def __init__(self, **kw):
         super().__init__(**kw)
-        self.ruffieradd = RuffierTimerWidget(a_c=True, tiempo_total=15.0)  # Configuramos para 30 segundos y sin activar teclado
+        aplicar_fondo_oscuro(self)
         
-        self.add_widget(self.ruffieradd)
+        self.outer = BoxLayout(orientation='vertical', padding=20, spacing=15)
+        
+        # 🟢 IMPORTADO: Teclado activo (a_c=True) para capturar espacios en 15 segundos
+        self.ruffieradd = RuffierTimerWidget(a_c=True, tiempo_total=15.0)  
+        
+        self.btn_next = Button(text='Siguiente (Ir a Sentadillas)', font_name=font, font_size=font_size, bold=True,
+                               size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5},
+                               background_normal='', background_color=COLOR_BOTON)
+        self.btn_next.bind(on_press=self.next)
+
+        self.outer.add_widget(self.ruffieradd)
+        self.outer.add_widget(self.btn_next)
+        self.add_widget(self.outer)
+
+    def on_enter(self):
+        # Cada vez que entramos a la pantalla, se reinicia el teclado y empieza a correr
+        Clock.schedule_once(lambda dt: self.ruffieradd.iniciar_toma(), 0.1)
 
     def next(self, instance):
         global p1
-        try:
-            p1 = int(self.in_result.text)
-        except ValueError:
-            p1 = 0
+        # Guardamos de forma automática el contador de espacios del widget
+        p1 = self.ruffieradd.contador_pulsaciones
         self.manager.current = 'sits'
+
 
 class ChekSits(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
-        instr = Label(text=txt_sits, font_name=font, font_size=font_size) 
-        self.btn = Button(text='Siguiente',font_name=font, font_size=font_size, size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5})
+        aplicar_fondo_oscuro(self)
+
+        instr = Label(text=txt_sits, font_name=font, font_size=font_size, color=COLOR_TEXTO) 
+        self.btn = Button(text='Siguiente', font_name=font, font_size=font_size, bold=True,
+                          size_hint=(0.5, 0.12), pos_hint={'center_x': 0.5}, background_normal='', background_color=COLOR_BOTON)
         self.btn.bind(on_press=self.next)
-        outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
+        
+        outer = BoxLayout(orientation='vertical', padding=30, spacing=20)
         outer.add_widget(instr)
         outer.add_widget(self.btn)
         self.add_widget(outer)
@@ -78,75 +127,102 @@ class ChekSits(Screen):
     def next(self, instance):
         self.manager.current = 'pulse2'
 
+
 class PulseSrc2(Screen):
+    """PANTALLA PULSO 2 Y DESCANSO: Usa ruffier_timer de forma doble y automatizada"""
     def __init__(self, **kw):
         super().__init__(**kw)
-        instr = Label(text=txt_test3, font_name=font, font_size=font_size)
-        line = BoxLayout(size_hint=(0.8, None), height='30sp')
-        lbl_result = Label(text="Ingresar el resultado: ", font_name=font, font_size=font_size, halign='right')
-        self.in_result = TextInput(text='0', multiline=False)
-        line.add_widget(lbl_result)
-        line.add_widget(self.in_result)
+        aplicar_fondo_oscuro(self)
+
+        self.outer = BoxLayout(orientation='vertical', padding=20, spacing=15)
         
-        line2 = BoxLayout(size_hint=(0.8, None), height='30sp')
-        lbl_result2 = Label(text='Resultado despues de descanso: ', font_name=font, font_size=font_size, halign='right')
-        self.in_result2 = TextInput(text='0', multiline=False)
-        line2.add_widget(lbl_result2)
-        line2.add_widget(self.in_result2)
+        # Etiqueta de estado para guiar al usuario
+        self.lbl_estado = Label(text="PREPÁRATE PARA EL DESCANSO", font_name=font, font_size='22sp', bold=True, size_hint_y=0.1, color=COLOR_TEXTO)
+        self.outer.add_widget(self.lbl_estado)
 
-        self.btn = Button(text="Siguiente", size_hint=(0.3, 0.2), pos_hint={'center_x': 0.5}, font_name=font, font_size=font_size)
+        # 🟢 IMPORTADO 1: Cronómetro de Descanso (45 segundos, teclado apagado)
+        self.cronometro_descanso = RuffierTimerWidget(a_c=False, tiempo_total=45.0)
+        self.cronometro_descanso.on_timeout_callback = self.iniciar_segunda_toma
+        
+        # 🟢 IMPORTADO 2: Cronómetro Pulso Final (15 segundos, teclado encendido)
+        self.cronometro_final = RuffierTimerWidget(a_c=True, tiempo_total=15.0)
+        
+        # Agregamos primero el de descanso a la pantalla
+        self.outer.add_widget(self.cronometro_descanso)
+
+        # Botón para continuar manualmente al terminar todo
+        self.btn = Button(text="Calcular Resultados", size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5}, 
+                          font_name=font, font_size=font_size, bold=True, background_normal='', background_color=COLOR_BOTON)
         self.btn.bind(on_press=self.next)
+        self.outer.add_widget(self.btn)
+        
+        self.add_widget(self.outer)
 
-        outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
-        outer.add_widget(instr)
-        outer.add_widget(line)
-        outer.add_widget(line2)
-        outer.add_widget(self.btn)
-        self.add_widget(outer)
+    def on_enter(self):
+        # Al entrar, arranca directamente el reloj de descanso de 45 segundos
+        self.lbl_estado.text = "FASE DE DESCANSO (Relájate)"
+        Clock.schedule_once(lambda dt: self.cronometro_descanso.iniciar_toma(), 0.1)
+
+    def iniciar_segunda_toma(self, *args):
+        """Se ejecuta sola cuando los 45 segundos de descanso llegan a cero"""
+        self.lbl_estado.text = "¡TOMA DE PULSO FINAL! (Presiona Espacio)"
+        
+        # Quitamos el reloj viejo de descanso y ponemos el reloj que cuenta espacios
+        self.outer.remove_widget(self.cronometro_descanso)
+        self.outer.insert_widget(1, self.cronometro_final) 
+        
+        # Iniciamos el segundero de 15 segundos para el pulso 3
+        self.cronometro_final.iniciar_toma()
 
     def next(self, instance):
         global p2, p3
-        try:
-            p2 = int(self.in_result.text)
-            p3 = int(self.in_result2.text) 
-        except ValueError:
-            p2, p3 = 0, 0
+        # Como en este caso el usuario descansó y se tomó el pulso seguido:
+        # p2 será una estimación fija/promedio o tomada en el descanso, y p3 serán los espacios reales guardados.
+        p2 = int(self.cronometro_descanso.contador_pulsaciones) # Será 0 porque a_c estaba en False
+        p3 = int(self.cronometro_final.contador_pulsaciones)    # Captura real con barra espaciadora
+        
+        # Nota: Si en tu fórmula requieres ingresar un p2 manual, puedes cambiar esta lógica, 
+        # pero aquí p3 ya se guarda de forma 100% automatizada por el espacio.
         self.manager.current = 'result'
+
 
 class Result(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
-        self.outer = BoxLayout(orientation='vertical', padding=8, spacing=8)
-        self.instr = Label(text='', font_name=font, font_size=font_size)
+        aplicar_fondo_oscuro(self)
+
+        self.outer = BoxLayout(orientation='vertical', padding=30, spacing=20)
+        self.instr = Label(text='', font_name=font, font_size=font_size, color=COLOR_TEXTO, halign='center')
+        
+        self.btn_exit = Button(text="Finalizar", size_hint=(0.4, 0.12), pos_hint={'center_x': 0.5},
+                               font_name=font, font_size=font_size, bold=True, background_normal='', background_color=COLOR_BOTON)
+        self.btn_exit.bind(on_press=lambda inst: App.get_running_app().stop())
+
         self.outer.add_widget(self.instr)
+        self.outer.add_widget(self.btn_exit)
         self.add_widget(self.outer)
     
     def on_enter(self):
         global name, p1, p2, p3, age
         
-        # 1. Traer los textos base definidos en ruffier.py
-        # Usamos 'globals().get' o valores por defecto por si ruffier.py está vacío
         txt_index = globals().get('txt_index', "Tu índice de Ruffier: ")
         txt_workheart = globals().get('txt_workheart', "Eficiencia cardíaca: ")
         txt_res = globals().get('txt_res', [
             "bajo.\n¡Ve a ver a tu médico lo antes posible!",
             "satisfactorio.\n¡Ve a ver a tu médico!",
-            "promedio.\nPodría valer la pena realizar pruebas adicionales con el médico.",
+            "promedio.\nPodría valer la pena realizar pruebas adicionales.",
             "superior al promedio",
             "alto"
         ])
 
-        # 2. LÓGICA MATEMÁTICA DEL TEST DE RUFFIER
         if age < 7:
             self.instr.text = name + '\n' + "No hay datos para menores de 7 años."
             return
 
-        # Multiplicamos por 4 cada pulso porque se tomaron en 15 segundos
+        # Multiplicación automatizada por 4 para proyectar a 1 minuto
         S = 4 * (p1 + p2 + p3)
         r_index = (S - 200) / 10
         
-        # 3. DETERMINAR EL NIVEL "INSATISFACTORIO" SEGÚN LA EDAD
-        # Para 7-8 años empieza en 21, y baja 1.5 puntos cada 2 años
         if age in [7, 8]:
             insat = 21.0
         elif age in [9, 10]:
@@ -155,36 +231,43 @@ class Result(Screen):
             insat = 18.0
         elif age in [13, 14]:
             insat = 16.5
-        else: # 15 años o más
+        else:
             insat = 15.0
 
-        # Escala de rangos restando las distancias de la tabla (4, 5, 5.5)
         debil = insat - 4
         satisf = debil - 5
         bueno = satisf - 5.5
 
-        # 4. EVALUAR EL ÍNDICE OBTENIDO
         if r_index >= insat:
-            res = txt_res[0]   # Bajo / Insatisfactorio
+            res = txt_res[0]   
         elif r_index >= debil:
-            res = txt_res[1]   # Débil
+            res = txt_res[1]   
         elif r_index >= satisf:
-            res = txt_res[2]   # Satisfactorio (Promedio)
+            res = txt_res[2]   
         elif r_index >= bueno:
-            res = txt_res[3]   # Bueno (Superior al promedio)
+            res = txt_res[3]   
         else:
-            res = txt_res[4]   # Perfecto (Alto)
+            res = txt_res[4]   
 
-        # 5. MOSTRAR RESULTADO EN PANTALLA
-        self.instr.text = f"{name}\n\n{txt_index}{r_index}\n{txt_workheart}{res}"
+        self.instr.text = f"{name}\n\n{txt_index}{r_index}\n\n{txt_workheart}{res}"
 
 
 class PruebasXD(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.ruffieradd = RuffierTimerWidget(a_c=False, tiempo_total=35.0)  # Configuramos para 30 segundos y sin activar teclado
+        aplicar_fondo_oscuro(self)
         
-        self.add_widget(self.ruffieradd)
+        outer = BoxLayout(orientation='vertical', padding=20, spacing=15)
+        self.ruffieradd = RuffierTimerWidget(a_c=False, tiempo_total=5.0)  
+        
+        self.btn_skip = Button(text='Saltar Inicialización', font_name=font, font_size=font_size, bold=True,
+                               size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5}, background_normal='', background_color=COLOR_BOTON)
+        self.btn_skip.bind(on_press=lambda inst: setattr(self.manager, 'current', 'instr'))
+
+        outer.add_widget(self.ruffieradd)
+        outer.add_widget(self.btn_skip)
+        self.add_widget(outer)
+
 
 class HeartCheck(App):
     def build(self):
