@@ -4,9 +4,7 @@ from kivy.properties import NumericProperty, StringProperty, BooleanProperty
 from kivy.clock import Clock
 from kivy.core.window import Window  
 from kivy.lang import Builder
-from kivy.uix.label import Label
 
-# Registramos el diseño exclusivo de este componente
 Builder.load_string('''
 <RuffierTimerWidget>:
     orientation: 'vertical'
@@ -65,7 +63,7 @@ Builder.load_string('''
             font_size: '14sp'
             color: 0.6, 0.6, 0.6, 1
 
-    # BOTÓN 1: Iniciar el cronómetro (Oculto o deshabilitado si ya está corriendo)
+    # BOTÓN 1: Iniciar el cronómetro
     Button:
         text: f'Iniciar Toma ({int(root.tiempo_configurado)} Segundos)'
         font_name: 'addons/sans-beach/Sans Beach.ttf'
@@ -78,7 +76,7 @@ Builder.load_string('''
         bold: True
         on_press: root.iniciar_toma()
     
-    # BOTÓN 2: Captura del pulso táctil (Solo visible en la toma activa si activar_teclado es True)
+    # BOTÓN 2: Captura del pulso táctil (Celular)
     Button:
         text: '¡REGISTRAR LATIDO!'
         font_name: 'addons/sans-beach/Sans Beach.ttf'
@@ -86,10 +84,10 @@ Builder.load_string('''
         opacity: 1 if (root.activar_teclado and root.cronometro_activo) else 0
         pos_hint: {'center_x': 0.5}
         background_normal: ''
-        background_color: 0.2, 0.8, 0.4, 1  # Un color verde llamativo para presionar fácil
+        background_color: 0.2, 0.8, 0.4, 1 
         font_size: '20sp'
         bold: True
-        on_press: root.detectar_latido(táctil=True)
+        on_press: root.detectar_latido(es_tactil=True)
 ''')
 
 class RuffierTimerWidget(BoxLayout):
@@ -112,7 +110,7 @@ class RuffierTimerWidget(BoxLayout):
         self.on_timeout_callback = None 
         
         if self.activar_teclado:
-            Window.bind(on_key_down=self.detectar_latido_teclado)
+            Window.bind(on_key_down=self.detectar_latido)
 
     def iniciar_toma(self):
         if self.evento_reloj:
@@ -136,21 +134,35 @@ class RuffierTimerWidget(BoxLayout):
             self.cronometro_activo = False 
             Clock.unschedule(self.evento_reloj)
             
+            # ⚠️ REPARADO: Desvincula la función correcta al finalizar
+            if self.activar_teclado:
+                try:
+                    Window.unbind(on_key_down=self.detectar_latido)
+                except Exception:
+                    pass
+            
             if self.on_timeout_callback:
                 self.on_timeout_callback(self.contador_pulsaciones)
         else:
             self.texto_tiempo = f"{self.tiempo_restante:.2f}"
             self.angulo_progreso = (self.tiempo_restante / self.tiempo_configurado) * 360.0
 
-    def detectar_latido_teclado(self, window, key, scancode, codepoint, modifiers):
-        """Captura los eventos físicos exclusivamente de la barra espaciadora"""
-        if key == 32:  # Espacio
-            if self.cronometro_activo:
-                self.contador_pulsaciones += 1
+    def detectar_latido(self, *args, **kwargs):
+        """Función universal: Cuenta si presionas ESPACIO en PC o el BOTÓN en móvil"""
+        if not self.cronometro_activo:
+            return False
+
+        # Caso 1: Viene del botón verde (móvil)
+        if kwargs.get('es_tactil', False):
+            self.contador_pulsaciones += 1
             return True
 
-    def detectar_latido(self, *args, **kwargs):
-        """Captura los eventos del botón táctil en pantallas móviles"""
-        # Verificamos si viene explícitamente desde el botón táctil o si el reloj corre
-        if self.cronometro_activo:
-            self.contador_pulsaciones += 1
+        # Caso 2: Viene del teclado físico (PC)
+        # En Kivy, el segundo argumento de on_key_down siempre es el código de la tecla
+        if len(args) >= 2:
+            key = args[1]
+            if key == 32:  # 32 es la Barra Espaciadora
+                self.contador_pulsaciones += 1
+                return True
+                
+        return False
