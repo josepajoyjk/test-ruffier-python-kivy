@@ -109,17 +109,20 @@ class ChekSits(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
         aplicar_fondo_oscuro(self)
+        self.outer = BoxLayout(orientation='vertical', padding=20, spacing=45)
+        self.ruffieradd = RuffierTimerWidget(a_c=False, tiempo_total=30.0)  # Widget de sentadillas sin temporizador, solo para contar
 
-        instr = Label(text=txt_sits, font_name=font, font_size=font_size, color=COLOR_TEXTO) 
+        instr = Label(text=txt_sits, font_name=font, font_size=font_size, color=COLOR_TEXTO, size_hint_y=0.04, halign='center', valign='middle') 
         self.btn = Button(text='Siguiente', font_name=font, font_size=font_size, bold=True,
                           size_hint=(0.5, 0.12), pos_hint={'center_x': 0.5}, background_normal='', background_color=COLOR_BOTON)
         self.btn.bind(on_press=self.next)
         
-        outer = BoxLayout(orientation='vertical', padding=30, spacing=20)
-        outer.add_widget(instr)
-        outer.add_widget(self.btn)
-        self.add_widget(outer)
-    
+        
+        self.outer.add_widget(instr)
+        self.outer.add_widget(self.ruffieradd)  # Agregamos el widget para contar sentadillas
+        self.outer.add_widget(self.btn)
+        self.add_widget(self.outer)
+
     def next(self, instance):
         self.manager.current = 'pulse2'
 
@@ -131,56 +134,58 @@ class PulseSrc2(Screen):
         aplicar_fondo_oscuro(self)
 
         self.outer = BoxLayout(orientation='vertical', padding=20, spacing=15)
-        
-        # Etiqueta de estado para guiar al usuario
-        self.lbl_estado = Label(text="PREPÁRATE PARA EL DESCANSO", font_name=font, font_size='22sp', bold=True, size_hint_y=0.1, color=COLOR_TEXTO)
-        self.outer.add_widget(self.lbl_estado)
-
-        # 🟢 IMPORTADO 1: Cronómetro de Descanso (45 segundos, teclado apagado)
-        self.cronometro_descanso = RuffierTimerWidget(a_c=False, tiempo_total=45.0)
-        self.cronometro_descanso.on_timeout_callback = self.iniciar_segunda_toma
-        
-        # 🟢 IMPORTADO 2: Cronómetro Pulso Final (15 segundos, teclado encendido)
-        self.cronometro_final = RuffierTimerWidget(a_c=True, tiempo_total=15.0)
-        
-        # Agregamos primero el de descanso a la pantalla
-        self.outer.add_widget(self.cronometro_descanso)
-
-        # Botón para continuar manualmente al terminar todo
-        self.btn = Button(text="Calcular Resultados", size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5}, 
-                          font_name=font, font_size=font_size, bold=True, background_normal='', background_color=COLOR_BOTON)
-        self.btn.bind(on_press=self.next)
-        self.outer.add_widget(self.btn)
-        
+        self.ruffieradd = RuffierTimerWidget(a_c=True, tiempo_total=15.0)  # Cronómetro de 15 segundos para el pulso post-sentadillas
+        self.outer.add_widget(self.ruffieradd)
+        self.btn_next = Button(text='Siguiente (Ver Resultados)', font_name=font, font_size=font_size, bold=True,
+                               size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5},
+                               background_normal='', background_color=COLOR_BOTON)
+        self.btn_next.bind(on_press=self.next)
+        self.outer.add_widget(self.btn_next)
         self.add_widget(self.outer)
 
-    def on_enter(self):
-        # Al entrar, arranca directamente el reloj de descanso de 45 segundos
-        self.lbl_estado.text = "FASE DE DESCANSO (Relájate)"
-        Clock.schedule_once(lambda dt: self.cronometro_descanso.iniciar_toma(), 0.1)
+    def next(self, instance):
+        global p2
+        p2 = int(self.ruffieradd.contador_pulsaciones) # Aquí podrías implementar una lógica para asignar un valor a p2 basado en el descanso, o dejarlo como el contador real.
+        self.manager.current = 'break'
 
-    def iniciar_segunda_toma(self, *args):
-        """Se ejecuta sola cuando los 45 segundos de descanso llegan a cero"""
-        self.lbl_estado.text = "¡TOMA DE PULSO FINAL! (Presiona Espacio)"
+class Break(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        aplicar_fondo_oscuro(self)
+        self.outer = BoxLayout(orientation='vertical', padding=20, spacing=15)
+        self.ruffieradd = RuffierTimerWidget(a_c=False, tiempo_total=30.0)  # Cronómetro de descanso de 30 segundos
         
-        # Quitamos el reloj viejo de descanso y ponemos el reloj que cuenta espacios
-        self.outer.remove_widget(self.cronometro_descanso)
-        self.outer.insert_widget(1, self.cronometro_final) 
-        
-        # Iniciamos el segundero de 15 segundos para el pulso 3
-        self.cronometro_final.iniciar_toma()
+        self.outer.add_widget(self.ruffieradd)
+        self.btn_next = Button(text='Siguiente (Ver Resultados)', font_name=font, font_size=font_size, bold=True,
+                               size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5},
+                               background_normal='', background_color=COLOR_BOTON)
+        self.btn_next.bind(on_press=self.next)
+        self.outer.add_widget(self.btn_next)
+        self.add_widget(self.outer)
 
     def next(self, instance):
-        global p2, p3
-        # Como en este caso el usuario descansó y se tomó el pulso seguido:
-        # p2 será una estimación fija/promedio o tomada en el descanso, y p3 serán los espacios reales guardados.
-        p2 = int(self.cronometro_descanso.contador_pulsaciones) # Será 0 porque a_c estaba en False
-        p3 = int(self.cronometro_final.contador_pulsaciones)    # Captura real con barra espaciadora
-        
-        # Nota: Si en tu fórmula requieres ingresar un p2 manual, puedes cambiar esta lógica, 
-        # pero aquí p3 ya se guarda de forma 100% automatizada por el espacio.
-        self.manager.current = 'result'
+        self.manager.current = 'pulse3'
 
+class PulseSrc3(Screen):
+    """PANTALLA PULSO 2 Y DESCANSO: Usa ruffier_timer de forma doble y automatizada"""
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        aplicar_fondo_oscuro(self)
+
+        self.outer = BoxLayout(orientation='vertical', padding=20, spacing=15)
+        self.ruffieradd = RuffierTimerWidget(a_c=True, tiempo_total=15.0)  # Cronómetro de 15 segundos para el pulso post-sentadillas
+        self.outer.add_widget(self.ruffieradd)
+        self.btn_next = Button(text='Siguiente (Ver Resultados)', font_name=font, font_size=font_size, bold=True,
+                               size_hint=(0.5, 0.1), pos_hint={'center_x': 0.5},
+                               background_normal='', background_color=COLOR_BOTON)
+        self.btn_next.bind(on_press=self.next)
+        self.outer.add_widget(self.btn_next)
+        self.add_widget(self.outer)
+
+    def next(self, instance):
+        global p3
+        p3 = int(self.ruffieradd.contador_pulsaciones) # Aquí podrías implementar una lógica para asignar un valor a p3 basado en el descanso, o dejarlo como el contador real.
+        self.manager.current = 'result'
 
 class Result(Screen):
     def __init__(self, **kw):
@@ -257,6 +262,8 @@ class HeartCheck(App):
         sm.add_widget(PulseSrc(name='pulse1'))
         sm.add_widget(ChekSits(name='sits'))
         sm.add_widget(PulseSrc2(name='pulse2'))
+        sm.add_widget(Break(name='break'))
+        sm.add_widget(PulseSrc3(name='pulse3'))
         sm.add_widget(Result(name='result'))
         return sm
 
