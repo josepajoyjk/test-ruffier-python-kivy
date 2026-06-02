@@ -1,0 +1,70 @@
+# ==============================================================================
+# ARCHIVOS DEL ENTORNO Y SEGURIDAD (¡NUNCA SUBIR!)
+# ==============================================================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+certs/
+auth.json
+
+# ==============================================================================
+# DEPENDENCIAS (Se descargan en cada máquina, no se suben)
+# ==============================================================================
+node_modules/
+bower_components/
+jspm_packages/
+.pnp
+.pnp.js
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# ==============================================================================
+# ARCHIVOS DE COMPILACIÓN / SALIDA
+# ==============================================================================
+dist/
+build/
+out/
+.next/
+.nuxt/
+.docusaurus/
+*.log
+*.log.*
+
+# ==============================================================================
+# CONFIGURACIONES DE EDITORES E IDEs
+# ==============================================================================
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+
+
+
+# ==============================================================================
+# ARCHIVOS ESPECÍFICOS DE LINUX
+# ==============================================================================
+*~
+
+# Archivos temporales de emacs u otros editores de terminal
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+~/.emacs.d/auto-save-list
+
+# Archivos de papelera o temporales del sistema
+.Trash-*
+.directory
+.fuse_hidden*
+.nfs*
